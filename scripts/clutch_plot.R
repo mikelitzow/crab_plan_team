@@ -21,4 +21,7 @@ dat$prop <- dat$full / dat$total
 
 ggplot(dat, aes(year, prop)) +
   geom_point() +
-  geom_line()
+  geom_line() +
+  ylab("Proportion full or 3/4 full")
+
+ggsave("./figs/clutch_TS.png", width = 6, height = 4, units = 'in')
