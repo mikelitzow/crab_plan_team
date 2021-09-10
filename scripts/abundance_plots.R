@@ -141,19 +141,20 @@ d2 <- nbs %>%
   mutate(area = "NBS", LCI = est - CI, UCI = est + CI)
 
 
+
 # immature male SC
 ggplot(d1, aes(year, est)) +
   geom_line(color = cb[6]) +
   geom_point(color = cb[6]) +
   geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, fill = cb[6]) +
   theme(axis.title.x = element_blank()) +
-  scale_y_continuous(breaks=c(200, 500, 1000, 3000), minor_breaks = NULL) +
+  scale_y_continuous(breaks=c(5, 20, 50, 100, 200, 500, 1000, 3000, 5000, 1000), minor_breaks = NULL) +
   coord_trans(y = "pseudo_log") +
   scale_x_continuous(breaks = seq(1980, 2020, 5), minor_breaks = NULL) +
   labs(title = "Abundance and 95% CI", y = "Millions") +
   geom_point(data = d2, aes(year, est), color = cb[4]) + 
   geom_errorbar(data = d2, aes(x = year, ymin = LCI, ymax = UCI), color = cb[4]) +
-  annotate(geom = "text", label = "Eastern Bering (< 95 mm carapace width)", x = 1992, y = 270, color = cb[6], size = 4) +
+  annotate(geom = "text", label = "Eastern Bering (< 95 mm carapace width)", x = 1992, y = 300, color = cb[6], size = 4) +
   annotate(geom = "text", label = "Northern Bering (< 68 mm carapace width)", x = 1992, y = 220, color = cb[4], size = 4)
 
 ggsave("./figs/immature male SC abundance TS.png", width = 6, height = 4, units = 'in')
@@ -163,7 +164,7 @@ ggsave("./figs/immature male SC abundance TS.png", width = 6, height = 4, units 
 d1$est[d1$year == 2018] - d1$est[d1$year == 2021] # 5519 - 5.5 billion!
 
 
-# combine for immature male
+# combine for immature female
 d1 <- sc %>%
   select(year, NUM_IMMATURE_FEMALE, CI_NUM_IMMATURE_FEMALE) %>%
   rename(est = NUM_IMMATURE_FEMALE, CI = CI_NUM_IMMATURE_FEMALE) %>%
@@ -174,6 +175,7 @@ d2 <- nbs %>%
   rename(est = NUM_FEMALE_IMMATURE, CI = CI_NUM_FEMALE_IMMATURE) %>%
   mutate(area = "NBS", LCI = est - CI, UCI = est + CI)
 
+d1$LCI <- if_else(d1$LCI < 5, 5, d1$LCI) # note that I'm limiting LCI minimum to 5!!
 
 # immature female SC
 ggplot(d1, aes(year, est)) +
@@ -181,17 +183,17 @@ ggplot(d1, aes(year, est)) +
   geom_point(color = cb[6]) +
   geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, fill = cb[6]) +
   theme(axis.title.x = element_blank()) +
-  scale_y_continuous(breaks=c(200, 500, 1000, 3000), minor_breaks = NULL) +
+  scale_y_continuous(breaks=c(10, 50, 100, 200, 500, 1000, 3000), minor_breaks = NULL) +
   coord_trans(y = "pseudo_log") +
   scale_x_continuous(breaks = seq(1980, 2020, 5), minor_breaks = NULL) +
   labs(title = "Abundance and 95% CI", y = "Millions") +
   geom_point(data = d2, aes(year, est), color = cb[4]) + 
   geom_errorbar(data = d2, aes(x = year, ymin = LCI, ymax = UCI), color = cb[4]) +
-  annotate(geom = "text", label = "Eastern Bering (< 95 mm carapace width)", x = 1992, y = 270, color = cb[6], size = 4) +
-  annotate(geom = "text", label = "Northern Bering (< 68 mm carapace width)", x = 1992, y = 220, color = cb[4], size = 4)
+  annotate(geom = "text", label = "Eastern Bering", x = 1985, y = 7000, color = cb[6], size = 4) +
+  annotate(geom = "text", label = "Northern Bering", x = 1985, y = 5000, color = cb[4], size = 4)
 
 ggsave("./figs/immature female SC abundance TS.png", width = 6, height = 4, units = 'in')
 
 
 # difference in # of individuals
-d1$est[d1$year == 2018] - d1$est[d1$year == 2021] # 5519 - 5.5 billion!
+d1$est[d1$year == 2018] - d1$est[d1$year == 2021] # 2566 - 2.6 billion!
