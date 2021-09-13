@@ -234,3 +234,27 @@ ggsave("./figs/immature female SC abundance TS.png", width = 6, height = 4, unit
 
 # difference in # of individuals
 d1$est[d1$year == 2018] - d1$est[d1$year == 2021] # 2566 - 2.6 billion!
+
+# switch to BBRKC
+dat <- read.csv("./data/BBRKC_abundance.csv")
+
+head(dat)
+
+dat <- dat %>%
+  select(SURVEY_YEAR, IMMATMALE_MILLIONS, IMMATFEM_MILLIONS)
+
+names(dat) <- c("year", "Male", "Female")
+
+dat <- dat %>%
+  pivot_longer(cols = -year)
+
+ggplot(dat, aes(year, value, color = name)) +
+  geom_point() +
+  geom_line() +
+  scale_y_continuous(breaks=c(1, 5, 10, 50, 100, 150, 200), minor_breaks = NULL) +
+  coord_trans(y = "pseudo_log") +
+  scale_color_manual(values = cb[c(1,2)]) +
+  theme(axis.title.x = element_blank(), legend.title = element_blank(), legend.position = c(0.8, 0.9)) +
+  ylab("Millions")
+
+ggsave("./figs/immature BBRKC abundance TS.png", width = 6, height = 4, units = 'in')
