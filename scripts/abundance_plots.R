@@ -9,7 +9,7 @@ sc <- read.csv("./data/snow_crab_abundance.csv")
 
 head(sc)
 
-# remove CIs
+# remove CVs
 drop <- grep("CV", names(sc))
 sc <- sc[,-drop]
 
@@ -22,7 +22,7 @@ names(sc)[1] <- "year"
 # add NBS
 nbs <- read.csv("./data/NBS_SC_abundance.csv")
 
-# remove CIs
+# remove CVs
 drop <- grep("CV", names(nbs))
 nbs <- nbs[,-drop]
 
@@ -63,6 +63,40 @@ ggplot(d1, aes(year, est)) +
 
 ggsave("./figs/mature male SC abundance TS.png", width = 6, height = 4, units = 'in')
 
+# combine for legal male
+d1 <- sc %>%
+  select(year, NUM_MALE_GE78, CI_NUM_MALE_GE78) %>%
+  rename(est = NUM_MALE_GE78, CI = CI_NUM_MALE_GE78) %>%
+  mutate(area = "EBS", LCI = est - CI, UCI = est + CI)
+
+d2 <- nbs %>%
+  select(year, NUM_MALE_GE78, CI_NUM_MALE_GE78) %>%
+  rename(est = NUM_MALE_GE78, CI = CI_NUM_MALE_GE78) %>%
+  mutate(area = "NBS", LCI = est - CI, UCI = est + CI)
+
+
+d2$LCI <- if_else(d2$LCI < 0, 0, d2$LCI)
+
+# legal male SC
+ggplot(d1, aes(year, est)) +
+  geom_line(color = cb[6]) +
+  geom_point(color = cb[6]) +
+  geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, fill = cb[6]) +
+  theme(axis.title.x = element_blank()) +
+  scale_y_continuous(breaks=c(0,5, 50,100,200, 400, 800), minor_breaks = NULL) +
+  coord_trans(y = "pseudo_log") +
+  scale_x_continuous(breaks = seq(1980, 2020, 5), minor_breaks = NULL) +
+  labs(title = "Abundance and 95% CI", y = "Millions") +
+  geom_point(data = d2, aes(year, est), color = cb[4]) + 
+  geom_errorbar(data = d2, aes(x = year, ymin = LCI, ymax = UCI), color = cb[4]) +
+  annotate(geom = "text", label = "Eastern Bering", x = 1985, y = 20, color = cb[6], size = 4) +
+  annotate(geom = "text", label = "Northern Bering", x = 1985, y = 10, color = cb[4], size = 4)
+
+ggsave("./figs/legal male SC abundance TS.png", width = 6, height = 4, units = 'in')
+
+# difference in # of individuals
+d1$est[d1$year == 2019] - d1$est[d1$year == 2021] # 419 million!
+
 # combine for preferred male
 d1 <- sc %>%
   select(year, NUM_MALE_GE102, CI_NUM_MALE_GE102) %>%
@@ -94,6 +128,9 @@ ggplot(d1, aes(year, est)) +
   annotate(geom = "text", label = "Northern Bering", x = 1985, y = 12, color = cb[4], size = 4)
 
 ggsave("./figs/preferred male SC abundance TS.png", width = 6, height = 4, units = 'in')
+
+# difference in # of individuals
+d1$est[d1$year == 2019] - d1$est[d1$year == 2021] # 30▲ million!
 
 # combine for mature female
 d1 <- sc %>%
