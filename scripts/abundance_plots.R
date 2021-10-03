@@ -19,6 +19,14 @@ sc[,2:ncol(sc)] <- sc[,2:ncol(sc)]/1e6
 # clean up names
 names(sc)[1] <- "year"
 
+xtra <- data.frame(matrix(nrow = 1, ncol = ncol(sc)))
+colnames(xtra) <- names(sc)
+xtra["year"] <- 2020
+
+sc <- rbind(sc, xtra) %>%
+  arrange(year)
+
+
 # add NBS
 nbs <- read.csv("./data/NBS_SC_abundance.csv")
 
@@ -31,6 +39,8 @@ nbs[,2:ncol(nbs)] <- nbs[,2:ncol(nbs)]/1e6
 
 # clean up names
 names(nbs)[1] <- "year"
+# and jitter
+nbs$year <- nbs$year + 0.2
 
 # combine for mature male
 d1 <- sc %>%
@@ -50,7 +60,7 @@ d2$LCI <- if_else(d2$LCI < 0, 0, d2$LCI)
 ggplot(d1, aes(year, est)) +
   geom_line(color = cb[6]) +
   geom_point(color = cb[6]) +
-  geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, fill = cb[6]) +
+  geom_errorbar(aes(ymin = LCI, ymax = UCI), color = cb[6]) +
   theme(axis.title.x = element_blank()) +
   scale_y_continuous(breaks=c(0,5, 50,100,200, 400, 800), minor_breaks = NULL) +
   coord_trans(y = "pseudo_log") +
@@ -81,7 +91,7 @@ d2$LCI <- if_else(d2$LCI < 0, 0, d2$LCI)
 ggplot(d1, aes(year, est)) +
   geom_line(color = cb[6]) +
   geom_point(color = cb[6]) +
-  geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, fill = cb[6]) +
+  geom_errorbar(aes(ymin = LCI, ymax = UCI), color = cb[6]) +
   theme(axis.title.x = element_blank()) +
   scale_y_continuous(breaks=c(0,5, 50,100,200, 400, 800), minor_breaks = NULL) +
   coord_trans(y = "pseudo_log") +
@@ -116,7 +126,7 @@ d2$LCI <- if_else(d2$LCI < 0, 0, d2$LCI)
 ggplot(d1, aes(year, est)) +
   geom_line(color = cb[6]) +
   geom_point(color = cb[6]) +
-  geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, fill = cb[6]) +
+  geom_errorbar(aes(ymin = LCI, ymax = UCI), color = cb[6]) +
   theme(axis.title.x = element_blank()) +
   scale_y_continuous(breaks=c(0, 1, 5, 10, 30, 50, 100, 200, 400), minor_breaks = NULL) +
   coord_trans(y = "pseudo_log") +
@@ -150,7 +160,7 @@ d1$LCI <- if_else(d1$LCI < 30, 30, d1$LCI) # note that I'm limiting LCI minimum 
 ggplot(d1, aes(year, est)) +
   geom_line(color = cb[6]) +
   geom_point(color = cb[6]) +
-  geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, fill = cb[6]) +
+  geom_errorbar(aes(ymin = LCI, ymax = UCI), color = cb[6]) +
   theme(axis.title.x = element_blank()) +
   scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000), minor_breaks = NULL) +
   coord_trans(y = "pseudo_log") +
@@ -183,7 +193,7 @@ d2 <- nbs %>%
 ggplot(d1, aes(year, est)) +
   geom_line(color = cb[6]) +
   geom_point(color = cb[6]) +
-  geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, fill = cb[6]) +
+  geom_errorbar(aes(ymin = LCI, ymax = UCI), color = cb[6]) +
   theme(axis.title.x = element_blank()) +
   scale_y_continuous(breaks=c(5, 20, 50, 100, 200, 500, 1000, 3000, 5000, 1000), minor_breaks = NULL) +
   coord_trans(y = "pseudo_log") +
@@ -218,7 +228,7 @@ d1$LCI <- if_else(d1$LCI < 5, 5, d1$LCI) # note that I'm limiting LCI minimum to
 ggplot(d1, aes(year, est)) +
   geom_line(color = cb[6]) +
   geom_point(color = cb[6]) +
-  geom_ribbon(aes(ymin = LCI, ymax = UCI), alpha = 0.2, fill = cb[6]) +
+  geom_errorbar(aes(ymin = LCI, ymax = UCI), color = cb[6]) +
   theme(axis.title.x = element_blank()) +
   scale_y_continuous(breaks=c(10, 50, 100, 200, 500, 1000, 3000), minor_breaks = NULL) +
   coord_trans(y = "pseudo_log") +
@@ -248,9 +258,19 @@ names(dat) <- c("year", "Male", "Female")
 dat <- dat %>%
   pivot_longer(cols = -year)
 
+xtra <- data.frame(year = c(2020, 2020),
+                   name = c("Male", "Female"),
+                   value = c(NA, NA))
+
+dat <- rbind(dat, xtra)
+
+dat <- dat %>%
+  arrange(name) %>%
+  arrange(year)
+
 ggplot(dat, aes(year, value, color = name)) +
   geom_point() +
-  geom_line() +
+  geom_path() +
   scale_y_continuous(breaks=c(1, 5, 10, 50, 100, 150, 200), minor_breaks = NULL) +
   coord_trans(y = "pseudo_log") +
   scale_color_manual(values = cb[c(1,2)]) +
@@ -258,3 +278,23 @@ ggplot(dat, aes(year, value, color = name)) +
   ylab("Millions")
 
 ggsave("./figs/immature BBRKC abundance TS.png", width = 6, height = 4, units = 'in')
+
+## overfished stocks ------------------------------------
+
+of <- read.csv("./data/legal_KC_abundance_Pribs_St.Matt.csv")
+
+head(of)
+
+
+of <- of %>%
+  pivot_longer(cols = -year)
+
+ggplot(of, aes(year, value)) +
+  geom_point() +
+  geom_path() +
+  facet_wrap(~name, scales = "free_y", ncol = 1) +
+  coord_trans(y = "pseudo_log") +
+  labs(y = "Millions of crab") +
+  theme(axis.title.x = element_blank())
+
+ggsave("./figs/overfished KC abundance TS.png", width = 5, height = 5, units = 'in')
