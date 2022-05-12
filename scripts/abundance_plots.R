@@ -39,6 +39,7 @@ nbs[,2:ncol(nbs)] <- nbs[,2:ncol(nbs)]/1e6
 
 # clean up names
 names(nbs)[1] <- "year"
+
 # and jitter
 nbs$year <- nbs$year + 0.2
 
@@ -217,6 +218,7 @@ d1 <- sc %>%
   rename(est = NUM_IMMATURE_FEMALE, CI = CI_NUM_IMMATURE_FEMALE) %>%
   mutate(area = "EBS", LCI = est - CI, UCI = est + CI)
 
+
 d2 <- nbs %>%
   select(year, NUM_FEMALE_IMMATURE, CI_NUM_FEMALE_IMMATURE) %>%
   rename(est = NUM_FEMALE_IMMATURE, CI = CI_NUM_FEMALE_IMMATURE) %>%
@@ -241,6 +243,19 @@ ggplot(d1, aes(year, est)) +
 
 ggsave("./figs/immature female SC abundance TS.png", width = 6, height = 4, units = 'in')
 
+
+# plot EBS alone
+ggplot(d1, aes(year, est)) +
+  geom_line(color = cb[6]) +
+  geom_point(color = cb[6]) +
+  geom_errorbar(aes(ymin = LCI, ymax = UCI), color = cb[6]) +
+  theme(axis.title.x = element_blank()) +
+  scale_y_continuous(breaks=c(10, 50, 100, 200, 500, 1000, 3000), minor_breaks = NULL) +
+  coord_trans(y = "pseudo_log") +
+  scale_x_continuous(breaks = seq(1980, 2020, 5), minor_breaks = NULL) +
+  labs(title = "Abundance and 95% CI", y = "Millions") 
+
+ggsave("./figs/immature female SC abundance TS EBS only.png", width = 6, height = 4, units = 'in')
 
 # difference in # of individuals
 d1$est[d1$year == 2018] - d1$est[d1$year == 2021] # 2566 - 2.6 billion!
